@@ -24,7 +24,7 @@ let {...data}=req.body;
 
         const mailOptions = {
             from: 'leads@enrichifydata.com',
-            to: 'lemightyeagle@gmail.com',
+            to: 'shipmate2134@gmail.com',
             subject: 'Live Chat Lead Email Sent to Client',
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
