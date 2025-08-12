@@ -130,19 +130,21 @@ data = processDataArrays(data);
             position: relative;
             z-index: 2;
         }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .logo {
-            height: 60px;
-            width: auto;
-            margin-right: 15px;
-        }
+       .logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.logo {
+    height: 60px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
         
         .brand-name {
             font-size: 28px;
@@ -354,7 +356,6 @@ data = processDataArrays(data);
                 <div class="logo-container">
                     <img src="https://www.enrichifydata.com/wp-content/uploads/2024/11/WhatsApp_Image_2024-11-24_at_8.44.26_PM-removebg-preview.png" 
                          alt="ENRICHIFY Logo" class="logo">
-                    <h2 class="brand-name">ENRICHIFY</h2>
                 </div>
                 <h1>Lead Notification Sent Successfully</h1>
                 <p>Lead confirmation has been delivered to your client</p>
@@ -735,7 +736,7 @@ const mailOptions = {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Welcome to ENRICHIFY</title>
-<style>
+<style>         
 * {
   margin: 0;
   padding: 0;
@@ -791,12 +792,15 @@ body {
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .logo {
   height: 60px;
   width: auto;
-  margin-right: 15px;
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
 }
 
 .brand-name {
@@ -1024,6 +1028,8 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
+  
+  
 </style>
 </head>
 <body>
@@ -1033,7 +1039,6 @@ body {
       <div class="logo-container">
           <img src="https://www.enrichifydata.com/wp-content/uploads/2024/11/WhatsApp_Image_2024-11-24_at_8.44.26_PM-removebg-preview.png" 
                alt="ENRICHIFY Logo" class="logo">
-          <h2 class="brand-name">ENRICHIFY</h2>
       </div>
       <h1>Welcome, ${data.name}</h1>
       <p>Your account has been successfully created</p>
@@ -1072,7 +1077,7 @@ body {
       </div>
       
       <div style="text-align: center; margin-top: 30px;">
-          <a href="https://www.enrichifydata.com/login" class="cta-button">Login to Your Account</a>
+          <a href="https://enrichify-data-request.vercel.app/login" class="cta-button">Login to Your Account</a>
       </div>
   </div>
   
