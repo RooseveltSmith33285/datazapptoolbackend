@@ -1421,7 +1421,7 @@ try{
             We received a request to reset the password for your ENRICHIFY account. If you made this request, click the button below to create a new password. If you didn't request a password reset, you can safely ignore this email.
         </div>
         
-        <a href=http://localhost:3000/resetpassword?id=${user._id} class="reset-button">
+        <a href=https://enrichify-data-request.vercel.app/resetpassword?id=${user._id} class="reset-button">
             Reset My Password
         </a>
         
@@ -1434,7 +1434,7 @@ try{
             <h3>Button not working?</h3>
             <p>If the button above doesn't work, copy and paste this link into your browser:</p>
             <div class="link-text">
-                http://localhost:3000/resetpassword?id=${user._id}
+                https://enrichify-data-request.vercel.app/resetpassword?id=${user._id}
             </div>
         </div>
         
