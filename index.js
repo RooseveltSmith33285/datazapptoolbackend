@@ -1124,6 +1124,370 @@ return res.status(200).json({
 })
 
 
+app.post('/resetpassword',async(req,res)=>{
+let {password,id}=req.body;
+    try{
+await userModel.findByIdAndUpdate(id,{
+    $set:{
+        password
+    }
+})
+
+return res.status(200).json({
+    message:"Sucessfully updated password"
+})
+    }catch(e){
+        return res.status(400).json({
+            error:"Something went wrong please try again"
+        })
+    }
+})
+
+app.post('/forgetpassword',async(req,res)=>{
+    let {email}=req.body;
+    console.log(email)
+let user=await userModel.findOne({email})
+console.log(user)
+    if(!user){
+        return res.status(400).json({
+            error:"Invalid email"
+        })
+    }
+
+try{
+    const mailOptions = {
+        from: 'leads@enrichifydata.com',
+        to: email,
+        subject: 'Password reset link',
+        html: `
+     <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reset Your Password - ENRICHIFY</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+        margin: 0;
+        padding: 20px 0;
+        min-height: 100vh;
+    }
+    
+    .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .header {
+        background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%);
+        padding: 30px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        z-index: 1;
+    }
+    
+    .header-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .logo {
+        height: 60px;
+        width: auto;
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+    
+    .header h1 {
+        color: white;
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    
+    .header p {
+        color: #e9d5ff;
+        font-size: 16px;
+        margin: 0;
+        opacity: 0.9;
+    }
+    
+    .lock-icon {
+        width: 48px;
+        height: 48px;
+        margin: 15px auto;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .content {
+        padding: 40px 30px;
+    }
+    
+    .greeting {
+        color: #e2e8f0;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+    
+    .message {
+        color: #cbd5e1;
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+    
+    .reset-button {
+        display: block;
+        width: 100%;
+        max-width: 280px;
+        margin: 30px auto;
+        padding: 16px 32px;
+        background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(147, 51, 234, 0.3);
+    }
+    
+    .reset-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(147, 51, 234, 0.4);
+    }
+    
+    .alternative-section {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(71, 85, 105, 0.5);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 30px 0;
+    }
+    
+    .alternative-section h3 {
+        color: #e2e8f0;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    .alternative-section p {
+        color: #94a3b8;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .link-text {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(147, 51, 234, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        word-break: break-all;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        color: #c084fc;
+    }
+    
+    .security-notice {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 30px 0;
+    }
+    
+    .security-notice h3 {
+        color: #fca5a5;
+        font-size: 16px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .security-notice ul {
+        color: #fecaca;
+        font-size: 14px;
+        margin-left: 20px;
+    }
+    
+    .security-notice li {
+        margin-bottom: 8px;
+    }
+    
+    .expiry-info {
+        background: rgba(147, 51, 234, 0.1);
+        border: 1px solid rgba(147, 51, 234, 0.2);
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin: 25px 0;
+    }
+    
+    .expiry-info .label {
+        color: #94a3b8;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    
+    .expiry-info .time {
+        color: #e2e8f0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .footer {
+        background: rgba(15, 23, 42, 0.8);
+        padding: 25px 30px;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .footer p {
+        color: #94a3b8;
+        font-size: 13px;
+        margin: 8px 0;
+    }
+    
+    .support-info {
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 15px;
+    }
+</style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="https://www.enrichifydata.com/wp-content/uploads/2024/11/WhatsApp_Image_2024-11-24_at_8.44.26_PM-removebg-preview.png" 
+                     alt="ENRICHIFY Logo" class="logo">
+            </div>
+           
+            <h1>Reset Your Password</h1>
+            <p>We received a request to reset your password</p>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="greeting">
+            Hello there! 👋
+        </div>
+        
+        <div class="message">
+            We received a request to reset the password for your ENRICHIFY account. If you made this request, click the button below to create a new password. If you didn't request a password reset, you can safely ignore this email.
+        </div>
+        
+        <a href=http://localhost:3000/resetpassword?id=${user._id} class="reset-button">
+            Reset My Password
+        </a>
+        
+        <div class="expiry-info">
+            <div class="label">Link Expires In</div>
+            <div class="time">24 Hours</div>
+        </div>
+        
+        <div class="alternative-section">
+            <h3>Button not working?</h3>
+            <p>If the button above doesn't work, copy and paste this link into your browser:</p>
+            <div class="link-text">
+                http://localhost:3000/resetpassword?id=${user._id}
+            </div>
+        </div>
+        
+        <div class="security-notice">
+            <h3>
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style="margin-right: 8px;">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                Security Notice
+            </h3>
+            <ul>
+                <li>This link will expire in 24 hours for security reasons</li>
+                <li>Only use this link if you requested a password reset</li>
+                <li>Never share this link with anyone else</li>
+                <li>Contact support if you didn't request this reset</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><strong>This is an automated email from ENRICHIFY.</strong></p>
+        <p>If you didn't request a password reset, please ignore this email or contact our support team.</p>
+        
+        <div class="support-info">
+            <p>Need help? Contact us at support@enrichifydata.com</p>
+            <p>© 2025 ENRICHIFY Data Platform. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+        `
+      };
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user:'leads@enrichifydata.com', 
+          pass: 'obeahkmflwnesojn' 
+        }
+      });
+      const info = await transporter.sendMail(mailOptions);
+console.log(info)
+
+return res.status(200).json({
+    message:"Password reset link sucessfully sent"
+})
+    }catch(e){
+        return res.status(400).json({
+            error:"Something went wrong please try again"
+        })
+    }
+})
+
 app.post('/login',async(req,res)=>{
 let {email,password}=req.body;
     try{
