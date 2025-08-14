@@ -70,8 +70,8 @@ data = processDataArrays(data);
           console.log(data)
 
         const mailOptions = {
-            from: 'leads@enrichifydata.com',
-            to: 'shipmate2134@gmail.com',
+            from: 'support@enrichifydata.com',
+            to: 'lemightyeagle@gmail.com',
             subject: 'New lead from Datazapp tool',
             html: `
              <!DOCTYPE html>
@@ -358,7 +358,7 @@ data = processDataArrays(data);
                          alt="ENRICHIFY Logo" class="logo">
                 </div>
                 <h1>Lead Notification Sent Successfully</h1>
-                <p>Lead confirmation has been delivered to your client</p>
+                <p style="color:black !important;">Lead confirmation has been delivered to your client</p>
                 <div class="status-badge">✓ Successfully Delivered</div>
             </div>
         </div>
@@ -695,8 +695,8 @@ data = processDataArrays(data);
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-              user:'leads@enrichifydata.com', 
-              pass: 'obeahkmflwnesojn' 
+              user:'support@enrichifydata.com', 
+              pass: 'dpephjzfqdqyqhec' 
             }
           });
           const info = await transporter.sendMail(mailOptions);
@@ -726,8 +726,8 @@ app.post('/register',async(req,res)=>{
 await userModel.create(data)       
 
 const mailOptions = {
-  from: 'leads@enrichifydata.com',
-  to: 'shipmate2134@gmail.com',
+  from: 'support@enrichifydata.com',
+  to: 'lemightyeagle@gmail.com',
   subject: 'New user registered',
   html: `
    <!DOCTYPE html>
@@ -1107,8 +1107,8 @@ body {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user:'leads@enrichifydata.com', 
-    pass: 'obeahkmflwnesojn' 
+    user:'support@enrichifydata.com', 
+    pass: 'dpephjzfqdqyqhec' 
   }
 });
 const info = await transporter.sendMail(mailOptions);
@@ -1156,7 +1156,7 @@ console.log(user)
 
 try{
     const mailOptions = {
-        from: 'leads@enrichifydata.com',
+        from: 'support@enrichifydata.com',
         to: email,
         subject: 'Password reset link',
         html: `
@@ -1471,8 +1471,8 @@ try{
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user:'leads@enrichifydata.com', 
-          pass: 'obeahkmflwnesojn' 
+          user:'support@enrichifydata.com', 
+          pass: 'dpephjzfqdqyqhec' 
         }
       });
       const info = await transporter.sendMail(mailOptions);
