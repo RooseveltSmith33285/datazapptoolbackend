@@ -1125,9 +1125,9 @@ return res.status(200).json({
 
 
 app.post('/resetpassword',async(req,res)=>{
-let {password,id}=req.body;
+let {password,email}=req.body;
     try{
-await userModel.findByIdAndUpdate(id,{
+await userModel.ipdateOne({email},{
     $set:{
         password
     }
