@@ -71,7 +71,7 @@ data = processDataArrays(data);
 
         const mailOptions = {
             from: 'support@enrichifydata.com',
-            to: 'lemightyeagle@gmail.com',
+            to: 'shipmate2134@gmail.com',
             subject: 'New lead from Datazapp tool',
             html: `
              <!DOCTYPE html>
