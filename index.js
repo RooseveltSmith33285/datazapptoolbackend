@@ -723,7 +723,7 @@ app.post('/register',async(req,res)=>{
             error:"User already exists"
         })
     }
-await userModel.create(data)       
+let user=await userModel.create(data)       
 
 const mailOptions = {
   from: 'support@enrichifydata.com',
@@ -1104,17 +1104,19 @@ body {
 </html>
   `
 };
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user:'support@enrichifydata.com', 
-    pass: 'dpephjzfqdqyqhec' 
-  }
-});
-const info = await transporter.sendMail(mailOptions);
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user:'support@enrichifydata.com', 
+//     pass: 'dpephjzfqdqyqhec' 
+//   }
+// });
+// const info = await transporter.sendMail(mailOptions);
 
 return res.status(200).json({
-    message:"User created sucessfully"
+    message:"User created sucessfully",
+    user
+
 })
     }catch(e){
         return res.status(400).json({
@@ -1122,6 +1124,7 @@ return res.status(200).json({
         })
     }
 })
+
 
 
 app.post('/resetpassword',async(req,res)=>{
