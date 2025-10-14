@@ -695,8 +695,8 @@ data = processDataArrays(data);
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-              user:'support@enrichifydata.com', 
-              pass: 'dpephjzfqdqyqhec' 
+              user:'leads@enrichifydata.com', 
+              pass: 'cpwkcmskadwkmzwc' 
             }
           });
           const info = await transporter.sendMail(mailOptions);
@@ -1476,7 +1476,7 @@ try{
         service: 'gmail',
         auth: {
           user:'support@enrichifydata.com', 
-          pass: 'dpephjzfqdqyqhec' 
+          pass: 'cpwkcmskadwkmzwc' 
         }
       });
       const info = await transporter.sendMail(mailOptions);
