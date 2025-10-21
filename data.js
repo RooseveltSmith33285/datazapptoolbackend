@@ -35,7 +35,10 @@ const DataSchema = new mongoose.Schema({
   genre_op: { type: String, default: 'AND' },
   save_name: { type: String, default: '' },
   supression_option: { type: String, default: '' },
-  user:{type:String}
+  user: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'user' 
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('data', DataSchema);

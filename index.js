@@ -8,7 +8,8 @@ const nodemailer=require('nodemailer')
 
 app.use(cors())
 app.use(express.json())
-const mongoose=require('mongoose')
+const mongoose=require('mongoose');
+const adminModel = require('./admin');
 mongoose.connect('mongodb+srv://user:user@cluster0.pfn059x.mongodb.net/Cluster0?retryWrites=true&w=majority&appName=Cluster0', {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
@@ -60,6 +61,200 @@ mongoose.connect('mongodb+srv://user:user@cluster0.pfn059x.mongodb.net/Cluster0?
     return data;
   }
 
+//admin routes
+
+app.delete('/deleteRequest/:id',async(req,res)=>{
+    let {id}=req.params;
+    try{
+       await dataModel.findByIdAndDelete(id)
+return res.status(200).json({
+    message:"Request deleted sucessfully"
+})
+    }catch(e){
+        return res.status(400).json({
+            error:"Something went wrong while deleting request"
+        })
+    }
+})
+
+
+
+app.get('/getRequests', async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const requests = await dataModel
+            .find({})
+            .populate('user')
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const total = await dataModel.countDocuments({});
+
+        return res.status(200).json({
+            requests,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
+    } catch (e) {
+        return res.status(400).json({
+            error: "Something went wrong while fetching requests"
+        });
+    }
+});
+
+
+app.post('/admin/register',async(req,res)=>{
+    let {...data}=req.body;
+    try{
+        let alreadyExists=await adminModel.findOne({email:data.email})
+        if(alreadyExists){
+            return res.status(400).json({
+                error:"Admin already exists"
+            })
+        }
+await adminModel.create(data)
+
+return res.status(200).json({
+    message:"Admin created sucessfully"
+})
+
+    }catch(e){
+        return res.status(400).json({
+            error:"Error while registering admin"
+        })
+    }
+})
+
+app.post('/admin/login',async(req,res)=>{
+    let {...data}=req.body;
+    try{
+        let alreadyExists=await adminModel.findOne({email:data.email})
+        if(!alreadyExists){
+            return res.status(400).json({
+                error:"Admin not found"
+            })
+        }
+
+        let passwordMatch=await adminModel.findOne({password:data.password})
+if(!passwordMatch){
+    return res.status(400).json({
+        error:"Password is incorrect"
+    })
+}
+
+return res.status(200).json({
+    message:"user logged in sucessfully",
+    token:alreadyExists
+})
+
+    }catch(e){
+        return res.status(400).json({
+            error:"Error while registering admin"
+        })
+    }
+})
+
+
+app.patch('/admin/reset', async(req, res) => {
+    let { email, password } = req.body; // Only destructure what you need
+    console.log({ email, password });
+    
+    try {
+        let alreadyExists = await adminModel.findOne({ email });
+        if (!alreadyExists) {
+            return res.status(400).json({
+                error: "Admin not found"
+            });
+        }
+        
+        await adminModel.updateOne(
+            { email }, 
+            { $set: { password } } // Only update the password field
+        );
+
+        return res.status(200).json({
+            message: "Password updated successfully"
+        });
+
+    } catch(e) {
+        console.log(e.message);
+        return res.status(400).json({
+            error: "Error while resetting password for admin"
+        });
+    }
+});
+
+app.patch('/updateUser/:id',async(req,res)=>{
+    let {id}=req.params
+    let {...data}=req.body;
+ 
+    try{
+await userModel.findByIdAndUpdate(id,{
+    $set:data
+})
+
+    }catch(e){
+        return res.status(400).json({
+            error:"Something went wrong while updating user"
+        })
+    }
+})
+
+
+app.patch('/updateRequest/:id',async(req,res)=>{
+    let {id}=req.params
+    let {...data}=req.body;
+    try{
+await dataModel.findByIdAndUpdate(id,{
+    $set:{
+data
+    }
+})
+
+    }catch(e){
+        return res.status(400).json({
+            error:"Something went wrong while updating request"
+        })
+    }
+})
+
+
+app.get('/getUsers', async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const users = await userModel.find({})
+            .skip(skip)
+            .limit(limit)
+            .select('-password'); // Don't send passwords
+
+        const total = await userModel.countDocuments({});
+
+        return res.status(200).json({
+            users,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
+    } catch (e) {
+        return res.status(400).json({
+            error: "Something went wrong while fetching users"
+        });
+    }
+});
 
 app.post('/sendData',async(req,res)=>{
 let {...data}=req.body;
