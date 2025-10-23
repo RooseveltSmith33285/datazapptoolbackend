@@ -79,6 +79,20 @@ return res.status(200).json({
 
 
 
+app.delete('/deleteUser/:id',async(req,res)=>{
+    let {id}=req.params;
+    try{
+       await userModel.findByIdAndDelete(id)
+return res.status(200).json({
+    message:"User deleted sucessfully"
+})
+    }catch(e){
+        return res.status(400).json({
+            error:"Something went wrong while deleting user"
+        })
+    }
+})
+
 app.get('/getRequests', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
