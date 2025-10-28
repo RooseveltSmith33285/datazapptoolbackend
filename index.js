@@ -641,6 +641,11 @@ data = processDataArrays(data);
         Lead Pricing & Purchase Details
     </h2>
     <div class="info-grid">
+     <div class="info-item">
+            <div class="info-label">Sale Representitive</div>
+            <div class="info-value">${data?.user?.sale_rep || 'Not specified'}</div>
+        </div>
+ 
         <div class="info-item">
             <div class="info-label">Industry Category</div>
             <div class="info-value">${data?.industry_category || 'Not specified'}</div>
