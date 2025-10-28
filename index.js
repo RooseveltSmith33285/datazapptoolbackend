@@ -632,8 +632,8 @@ data = processDataArrays(data);
                     </div>
                 </div>
             </div>
-
-            <div class="section">
+            
+<div class="section">
     <h2 class="section-title">
         <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
             <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
@@ -656,6 +656,14 @@ data = processDataArrays(data);
         <div class="info-item">
             <div class="info-label">Membership Tier</div>
             <div class="info-value">${data?.membership_tier || 'None'}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Selected Plan</div>
+            <div class="info-value">${data?.plan ? (data.plan === 'retail' ? 'Retail Plan' : 'Membership Plan') : 'Not selected'}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Plan Price per Lead</div>
+            <div class="info-value">${data?.plan_price ? `$${Number(data.plan_price).toFixed(2)}` : 'Not specified'}</div>
         </div>
         <div class="info-item">
             <div class="info-label">Total Purchase Leads</div>
