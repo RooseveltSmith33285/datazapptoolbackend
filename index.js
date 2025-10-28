@@ -280,7 +280,7 @@ data = processDataArrays(data);
 
         const mailOptions = {
             from: 'support@enrichifydata.com',
-            to: 'support@enrichifydata.com',
+            to: 'lemightyeagle@gmail.com',
             subject: 'New lead from Datazapp tool',
             html: `
              <!DOCTYPE html>
@@ -633,6 +633,81 @@ data = processDataArrays(data);
                 </div>
             </div>
 
+            <div class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+        </svg>
+        Lead Pricing & Purchase Details
+    </h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Industry Category</div>
+            <div class="info-value">${data?.industry_category || 'Not specified'}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Specific Industry</div>
+            <div class="info-value">${data?.specific_industry || 'Not specified'}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Monthly Lead Volume</div>
+            <div class="info-value">${data?.monthly_lead_volume || 'Not specified'}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Membership Tier</div>
+            <div class="info-value">${data?.membership_tier || 'None'}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Total Purchase Leads</div>
+            <div class="info-value">${data?.total_purchase_leads || '0'}</div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+        </svg>
+        Household & Personal Details
+    </h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Number of Individuals</div>
+            <div class="list-value">
+                ${data?.indivisuals?.length > 0 ? 
+                    data.indivisuals.map(item => `<span class="list-item">${item}</span>`).join('') : 
+                    '<span class="info-value empty">None selected</span>'
+                }
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Marital Status</div>
+            <div class="list-value">
+                ${data?.martial_status?.length > 0 ? 
+                    data.martial_status.map(item => `<span class="list-item">${item}</span>`).join('') : 
+                    '<span class="info-value empty">None selected</span>'
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2 class="section-title">
+        <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13 7H7v6h6V7z"/>
+            <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1h-2v1a1 1 0 11-2 0v-1H7a2 2 0 01-2-2v-2H4a1 1 0 110-2h1V9H4a1 1 0 110-2h1V5a2 2 0 012-2h2V2zM5 5h10v10H5V5z" clip-rule="evenodd"/>
+        </svg>
+        Campaign Save Information
+    </h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Campaign Name</div>
+            <div class="info-value">${data?.save_name || 'Not specified'}</div>
+        </div>
+    </div>
+</div>
             <div class="section">
                 <h2 class="section-title">
                     <svg class="section-icon" fill="currentColor" viewBox="0 0 20 20">
