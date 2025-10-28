@@ -10,7 +10,7 @@ app.use(cors())
 app.use(express.json())
 const mongoose=require('mongoose');
 const adminModel = require('./admin');
-mongoose.connect('mongodb+srv://user:user@cluster0.pfn059x.mongodb.net/Cluster0?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb://127.0.0.1/datazappnew', {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
   family: 4

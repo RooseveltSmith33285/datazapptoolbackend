@@ -19,6 +19,9 @@ const userSchema=mongoose.Schema({
 
     password:{
         type:String
+    },
+    sale_rep:{
+        type:String
     }
 })
 
