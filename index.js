@@ -157,7 +157,7 @@ app.post('/admin/login',async(req,res)=>{
             })
         }
 
-        let passwordMatch=await adminModel.findOne({password:data.password})
+        let passwordMatch=await adminModel.findOne({email:data.email,password:data.password})
 if(!passwordMatch){
     return res.status(400).json({
         error:"Password is incorrect"
@@ -1799,7 +1799,7 @@ if(!emailFound){
     })
 }
 
-let passwordFound=await userModel.findOne({password})
+let passwordFound=await userModel.findOne({email,password})
 if(!passwordFound){
     return res.status(400).json({
         error:"Invalid password"
