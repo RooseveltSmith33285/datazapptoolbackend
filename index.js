@@ -5,6 +5,8 @@ const dataModel=require('./data')
 const userModel = require('./user');
 const nodemailer=require('nodemailer')
 
+const argon2 = require('argon2');
+
 
 app.use(cors())
 app.use(express.json())
@@ -125,56 +127,111 @@ app.get('/getRequests', async (req, res) => {
 });
 
 
-app.post('/admin/register',async(req,res)=>{
-    let {...data}=req.body;
-    try{
-        let alreadyExists=await adminModel.findOne({email:data.email})
-        if(alreadyExists){
+app.post('/admin/register', async(req, res) => {
+    let {...data} = req.body;
+    
+    try {
+        // Validate required fields
+        if (!data.email || !data.password) {
             return res.status(400).json({
-                error:"Admin already exists"
-            })
+                error: "Email and password are required"
+            });
         }
-await adminModel.create(data)
-
-return res.status(200).json({
-    message:"Admin created sucessfully"
-})
-
-    }catch(e){
-        return res.status(400).json({
-            error:"Error while registering admin"
-        })
-    }
-})
-
-app.post('/admin/login',async(req,res)=>{
-    let {...data}=req.body;
-    try{
-        let alreadyExists=await adminModel.findOne({email:data.email})
-        if(!alreadyExists){
+        
+        // Validate password strength
+        if (data.password.length < 8) {
             return res.status(400).json({
-                error:"Admin not found"
-            })
+                error: "Password must be at least 8 characters long"
+            });
         }
-
-        let passwordMatch=await adminModel.findOne({email:data.email,password:data.password})
-if(!passwordMatch){
-    return res.status(400).json({
-        error:"Password is incorrect"
-    })
-}
-
-return res.status(200).json({
-    message:"user logged in sucessfully",
-    token:alreadyExists
-})
-
-    }catch(e){
+        
+        // Check if admin already exists
+        let alreadyExists = await adminModel.findOne({email: data.email});
+        
+        if (alreadyExists) {
+            return res.status(400).json({
+                error: "Admin already exists"
+            });
+        }
+        
+        // Hash the password using argon2
+        data.password = await argon2.hash(data.password);
+        
+        // Create admin
+        let admin = await adminModel.create(data);
+        
+        // Remove password from response for security
+        const adminResponse = {
+            id: admin._id,
+            name: admin.name,
+            email: admin.email,
+            role: admin.role || 'admin',
+            createdAt: admin.createdAt
+        };
+        
+        return res.status(200).json({
+            message: "Admin created successfully",
+            admin: adminResponse
+        });
+        
+    } catch(e) {
         return res.status(400).json({
-            error:"Error while registering admin"
-        })
+            error: e.message || "Error while registering admin"
+        });
     }
-})
+});
+
+app.post('/admin/login', async(req, res) => {
+    let {...data} = req.body;
+    
+    try {
+   
+        if (!data.email || !data.password) {
+            return res.status(400).json({
+                error: "Email and password are required"
+            });
+        }
+        
+       
+        let alreadyExists = await adminModel.findOne({email: data.email});
+        
+        if (!alreadyExists) {
+            return res.status(400).json({
+                error: "Admin not found"
+            });
+        }
+        
+       
+        const isValidPassword = await argon2.verify(alreadyExists.password, data.password);
+        
+        if (!isValidPassword) {
+            return res.status(400).json({
+                error: "Password is incorrect"
+            });
+        }
+        
+        
+        const adminResponse = {
+            id: alreadyExists._id,
+            name: alreadyExists.name,
+            email: alreadyExists.email,
+            role: alreadyExists.role || 'admin',
+            createdAt: alreadyExists.createdAt
+        };
+        
+        
+        return res.status(200).json({
+            message: "User logged in successfully",
+            token: adminResponse  
+          
+        });
+        
+    } catch(e) {
+        return res.status(400).json({
+            error: e.message || "Error while logging in admin"
+        });
+    }
+});
 
 
 app.patch('/admin/reset', async(req, res) => {
@@ -1011,23 +1068,46 @@ return res.status(200).json({
     }
 })
 
-app.post('/register',async(req,res)=>{
-    try{
-    let {...data}=req.body;
-    let alreadyExists=await userModel.findOne({email:data.email})
-    if(alreadyExists){
-        return res.status(400).json({
-            error:"User already exists"
-        })
-    }
-let user=await userModel.create(data)       
 
-const mailOptions = {
-  from: 'support@enrichifydata.com',
-  to: data.email,
-  subject: 'New user registered',
-  html: `
-   <!DOCTYPE html>
+app.post('/register', async(req, res) => {
+    try {
+        let {...data} = req.body;
+        
+        // Validate required fields
+        if (!data.email || !data.password) {
+            return res.status(400).json({
+                error: "Email and password are required"
+            });
+        }
+        
+        // Validate password strength
+        if (data.password.length < 8) {
+            return res.status(400).json({
+                error: "Password must be at least 8 characters long"
+            });
+        }
+        
+        // Check if user already exists
+        let alreadyExists = await userModel.findOne({email: data.email});
+        if (alreadyExists) {
+            return res.status(400).json({
+                error: "User already exists"
+            });
+        }
+        
+        // Hash the password using argon2
+        data.password = await argon2.hash(data.password);
+        
+        // Create user
+        let user = await userModel.create(data);
+        
+        // Prepare email
+        const mailOptions = {
+            from: 'support@enrichifydata.com',
+            to: data.email,
+            subject: 'New user registered',
+            html: `
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1325,8 +1405,6 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
-  
-  
 </style>
 </head>
 <body>
@@ -1364,12 +1442,12 @@ body {
           
           <div class="info-item">
               <div class="info-label">Phone Number</div>
-              <div class="info-value">${data.phone}</div>
+              <div class="info-value">${data.phone || 'Not provided'}</div>
           </div>
           
           <div class="info-item">
               <div class="info-label">Address</div>
-              <div class="info-value">${data.address}</div>
+              <div class="info-value">${data.address || 'Not provided'}</div>
           </div>
       </div>
       
@@ -1394,33 +1472,454 @@ body {
 <div class="footer">
   <p>This is an automated message from ENRICHIFY. Please do not reply to this email.</p>
   <p>For support, contact <a href="mailto:support@enrichifydata.com" style="color: #c084fc; text-decoration: none;">support@enrichifydata.com</a></p>
- 
 </div>
 </div>
 </body>
 </html>
-  `
-};
-// const transporter = nodemailer.createTransport({
-//   service: 'gmail',
-//   auth: {
-//     user:'support@enrichifydata.com', 
-//     pass: 'dpephjzfqdqyqhec' 
-//   }
-// });
-// const info = await transporter.sendMail(mailOptions);
-
-return res.status(200).json({
-    message:"User created sucessfully",
-    user
-
-})
-    }catch(e){
+            `
+        };
+        
+        // Uncomment to send email
+        // const transporter = nodemailer.createTransport({
+        //   service: 'gmail',
+        //   auth: {
+        //     user: 'support@enrichifydata.com', 
+        //     pass: 'dpephjzfqdqyqhec' 
+        //   }
+        // });
+        // await transporter.sendMail(mailOptions);
+       
+        const userResponse = {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            address: user.address,
+            createdAt: user.createdAt
+        };
+        
+        return res.status(200).json({
+            message: "User created successfully",
+            user: userResponse
+        });
+        
+    } catch(e) {
         return res.status(400).json({
-            error:e.message
-        })
+            error: e.message
+        });
     }
-})
+});
+
+// app.post('/register',async(req,res)=>{
+//     try{
+//     let {...data}=req.body;
+//     let alreadyExists=await userModel.findOne({email:data.email})
+//     if(alreadyExists){
+//         return res.status(400).json({
+//             error:"User already exists"
+//         })
+//     }
+// let user=await userModel.create(data)       
+
+// const mailOptions = {
+//   from: 'support@enrichifydata.com',
+//   to: data.email,
+//   subject: 'New user registered',
+//   html: `
+//    <!DOCTYPE html>
+// <html lang="en">
+// <head>
+// <meta charset="UTF-8">
+// <meta name="viewport" content="width=device-width, initial-scale=1.0">
+// <title>Welcome to ENRICHIFY</title>
+// <style>         
+// * {
+//   margin: 0;
+//   padding: 0;
+//   box-sizing: border-box;
+// }
+
+// body {
+//   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+//   line-height: 1.6;
+//   background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+//   margin: 0;
+//   padding: 20px 0;
+//   min-height: 100vh;
+// }
+
+// .email-container {
+//   max-width: 800px;
+//   margin: 0 auto;
+//   background: rgba(15, 23, 42, 0.95);
+//   backdrop-filter: blur(20px);
+//   border-radius: 16px;
+//   overflow: hidden;
+//   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+// }
+
+// .header {
+//   background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%);
+//   padding: 30px;
+//   text-align: center;
+//   position: relative;
+//   overflow: hidden;
+// }
+
+// .header::before {
+//   content: '';
+//   position: absolute;
+//   top: -50%;
+//   right: -20%;
+//   width: 200px;
+//   height: 200px;
+//   background: rgba(255, 255, 255, 0.1);
+//   border-radius: 50%;
+//   z-index: 1;
+// }
+
+// .header-content {
+//   position: relative;
+//   z-index: 2;
+// }
+
+// .logo-container {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   margin-bottom: 20px;
+//   width: 100%;
+// }
+
+// .logo {
+//   height: 60px;
+//   width: auto;
+//   display: block;
+//   margin: 0 auto;
+//   max-width: 100%;
+// }
+
+// .brand-name {
+//   font-size: 28px;
+//   font-weight: 700;
+//   color: white;
+//   margin: 0;
+// }
+
+// .header h1 {
+//   color: white;
+//   font-size: 24px;
+//   font-weight: 600;
+//   margin-bottom: 8px;
+// }
+
+// .header p {
+//   color: #e9d5ff;
+//   font-size: 16px;
+//   margin: 0;
+//   opacity: 0.9;
+// }
+
+// .status-badge {
+//   display: inline-block;
+//   background: rgba(39, 174, 96, 0.2);
+//   color: #27ae60;
+//   padding: 8px 16px;
+//   border-radius: 20px;
+//   font-size: 14px;
+//   font-weight: 600;
+//   margin-top: 15px;
+//   border: 1px solid rgba(39, 174, 96, 0.3);
+// }
+
+// .content {
+//   padding: 0;
+// }
+
+// .section {
+//   padding: 30px;
+//   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+// }
+
+// .section:last-child {
+//   border-bottom: none;
+// }
+
+// .section-title {
+//   color: #e2e8f0;
+//   font-size: 20px;
+//   font-weight: 600;
+//   margin-bottom: 20px;
+//   display: flex;
+//   align-items: center;
+// }
+
+// .section-icon {
+//   width: 24px;
+//   height: 24px;
+//   margin-right: 10px;
+//   opacity: 0.8;
+// }
+
+// .info-grid {
+//   display: grid;
+//   grid-template-columns: 1fr 1fr;
+//   gap: 20px;
+//   margin-bottom: 20px;
+// }
+
+// @media (max-width: 600px) {
+//   .info-grid {
+//       grid-template-columns: 1fr;
+//       gap: 15px;
+//   }
+// }
+
+// .info-item {
+//   background: rgba(30, 41, 59, 0.6);
+//   border: 1px solid rgba(71, 85, 105, 0.5);
+//   border-radius: 8px;
+//   padding: 16px;
+//   transition: all 0.2s ease;
+// }
+
+// .info-item:hover {
+//   background: rgba(30, 41, 59, 0.8);
+//   border-color: rgba(147, 51, 234, 0.3);
+// }
+
+// .info-label {
+//   color: #94a3b8;
+//   font-size: 12px;
+//   font-weight: 500;
+//   text-transform: uppercase;
+//   letter-spacing: 0.5px;
+//   margin-bottom: 6px;
+// }
+
+// .info-value {
+//   color: #e2e8f0;
+//   font-size: 14px;
+//   font-weight: 500;
+//   word-break: break-word;
+// }
+
+// .info-value.success {
+//   color: #27ae60;
+//   font-weight: 600;
+// }
+
+// .info-value.empty {
+//   color: #64748b;
+//   font-style: italic;
+// }
+
+// .list-value {
+//   color: #e2e8f0;
+//   font-size: 14px;
+//   line-height: 1.5;
+// }
+
+// .list-item {
+//   background: rgba(147, 51, 234, 0.1);
+//   color: #c084fc;
+//   padding: 4px 8px;
+//   border-radius: 4px;
+//   display: inline-block;
+//   margin: 2px 4px 2px 0;
+//   font-size: 12px;
+// }
+
+// .next-steps {
+//   background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(79, 70, 229, 0.1) 100%);
+//   border: 1px solid rgba(147, 51, 234, 0.2);
+//   border-radius: 12px;
+//   padding: 25px;
+//   margin: 20px 0;
+// }
+
+// .next-steps h3 {
+//   color: #e2e8f0;
+//   font-size: 18px;
+//   margin-bottom: 15px;
+//   display: flex;
+//   align-items: center;
+// }
+
+// .next-steps ul {
+//   list-style: none;
+//   padding: 0;
+// }
+
+// .next-steps li {
+//   color: #cbd5e1;
+//   margin-bottom: 10px;
+//   padding-left: 24px;
+//   position: relative;
+// }
+
+// .next-steps li::before {
+//   content: '✓';
+//   position: absolute;
+//   left: 0;
+//   color: #27ae60;
+//   font-weight: bold;
+// }
+
+// .footer {
+//   background: rgba(15, 23, 42, 0.8);
+//   padding: 25px 30px;
+//   text-align: center;
+//   border-top: 1px solid rgba(255, 255, 255, 0.1);
+// }
+
+// .footer p {
+//   color: #94a3b8;
+//   font-size: 13px;
+//   margin: 0;
+// }
+
+// .timestamp {
+//   background: rgba(147, 51, 234, 0.1);
+//   border: 1px solid rgba(147, 51, 234, 0.2);
+//   border-radius: 6px;
+//   padding: 8px 12px;
+//   display: inline-block;
+//   margin-top: 10px;
+// }
+
+// .timestamp-label {
+//   color: #94a3b8;
+//   font-size: 11px;
+//   text-transform: uppercase;
+//   letter-spacing: 0.5px;
+// }
+
+// .timestamp-value {
+//   color: #e2e8f0;
+//   font-size: 13px;
+//   font-weight: 500;
+// }
+
+// .welcome-message {
+//   font-size: 16px;
+//   color: #e2e8f0;
+//   margin-bottom: 25px;
+//   line-height: 1.6;
+// }
+
+// .cta-button {
+//   display: inline-block;
+//   background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%);
+//   color: white;
+//   padding: 12px 24px;
+//   border-radius: 8px;
+//   text-decoration: none;
+//   font-weight: 600;
+//   margin: 15px 0;
+//   transition: all 0.3s ease;
+// }
+
+// .cta-button:hover {
+//   transform: translateY(-2px);
+//   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+// }
+  
+  
+// </style>
+// </head>
+// <body>
+// <div class="email-container">
+// <div class="header">
+//   <div class="header-content">
+//       <div class="logo-container">
+//           <img src="https://www.enrichifydata.com/wp-content/uploads/2024/11/WhatsApp_Image_2024-11-24_at_8.44.26_PM-removebg-preview.png" 
+//                alt="ENRICHIFY Logo" class="logo">
+//       </div>
+//       <h1>Welcome, ${data.name}</h1>
+//       <p>Your account has been successfully created</p>
+//       <div class="status-badge">✓ Registration Complete</div>
+//   </div>
+// </div>
+
+// <div class="content">
+//   <div class="section">
+//       <p class="welcome-message">
+//           Thank you for registering with ENRICHIFY. We're excited to have you on board! 
+//           Below you'll find your account details. If you have any questions, don't hesitate 
+//           to contact our support team.
+//       </p>
+      
+//       <div class="info-grid">
+//           <div class="info-item">
+//               <div class="info-label">Full Name</div>
+//               <div class="info-value">${data.name}</div>
+//           </div>
+          
+//           <div class="info-item">
+//               <div class="info-label">Email Address</div>
+//               <div class="info-value">${data.email}</div>
+//           </div>
+          
+//           <div class="info-item">
+//               <div class="info-label">Phone Number</div>
+//               <div class="info-value">${data.phone}</div>
+//           </div>
+          
+//           <div class="info-item">
+//               <div class="info-label">Address</div>
+//               <div class="info-value">${data.address}</div>
+//           </div>
+//       </div>
+      
+//       <div style="text-align: center; margin-top: 30px;">
+//           <a href="https://enrichify-data-request.vercel.app/login" class="cta-button">Login to Your Account</a>
+//       </div>
+//   </div>
+  
+//   <div class="section">
+//       <div class="next-steps">
+//           <h3>Next Steps</h3>
+//           <ul>
+//               <li>Verify your email address (if required)</li>
+//               <li>Complete your profile setup</li>
+//               <li>Explore our platform features</li>
+//               <li>Connect with our support team for any assistance</li>
+//           </ul>
+//       </div>
+//   </div>
+// </div>
+
+// <div class="footer">
+//   <p>This is an automated message from ENRICHIFY. Please do not reply to this email.</p>
+//   <p>For support, contact <a href="mailto:support@enrichifydata.com" style="color: #c084fc; text-decoration: none;">support@enrichifydata.com</a></p>
+ 
+// </div>
+// </div>
+// </body>
+// </html>
+//   `
+// };
+// // const transporter = nodemailer.createTransport({
+// //   service: 'gmail',
+// //   auth: {
+// //     user:'support@enrichifydata.com', 
+// //     pass: 'dpephjzfqdqyqhec' 
+// //   }
+// // });
+// // const info = await transporter.sendMail(mailOptions);
+
+// return res.status(200).json({
+//     message:"User created sucessfully",
+//     user
+
+// })
+//     }catch(e){
+//         return res.status(400).json({
+//             error:e.message
+//         })
+//     }
+// })
 
 
 
@@ -1789,32 +2288,60 @@ return res.status(200).json({
     }
 })
 
-app.post('/login',async(req,res)=>{
-let {email,password}=req.body;
-    try{
-let emailFound=await userModel.findOne({email})
-if(!emailFound){
-    return res.status(400).json({
-        error:"Email not found"
-    })
-}
-
-let passwordFound=await userModel.findOne({email,password})
-if(!passwordFound){
-    return res.status(400).json({
-        error:"Invalid password"
-    })
-}
-
-return res.status(200).json({
-    user:emailFound
-})
-    }catch(e){
+app.post('/login', async(req, res) => {
+    let {email, password} = req.body;
+    
+    try {
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                error: "Email and password are required"
+            });
+        }
+        
+        // Find user by email
+        let emailFound = await userModel.findOne({email});
+        
+        if (!emailFound) {
+            return res.status(400).json({
+                error: "Email not found"
+            });
+        }
+        
+        // Verify password using argon2
+        const isValidPassword = await argon2.verify(emailFound.password, password);
+        
+        if (!isValidPassword) {
+            return res.status(400).json({
+                error: "Invalid password"
+            });
+        }
+        
+     
+        const userResponse = {
+            id: emailFound._id,
+            name: emailFound.name,
+            email: emailFound.email,
+            phone: emailFound.phone,
+            address: emailFound.address,
+            credits: emailFound.credits,
+            createdAt: emailFound.createdAt
+          
+        };
+        
+      
+        return res.status(200).json({
+            message: "Login successful",
+            user: userResponse
+           
+        });
+        
+    } catch(e) {
         return res.status(400).json({
-            error:e.message
-        })
+            error: e.message
+        });
     }
-})
+});
 
 app.listen(5000,()=>{
     console.log(`Listening to port 5000`)
