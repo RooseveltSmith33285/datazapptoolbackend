@@ -1923,25 +1923,57 @@ body {
 
 
 
-app.post('/resetpassword',async(req,res)=>{
-let {password,email}=req.body;
-    try{
-await userModel.updateOne({email},{
-    $set:{
-        password
-    }
-})
+app.post('/resetpassword', async (req, res) => {
+    let { password, email } = req.body;
+    
+    try {
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                error: "Email and password are required"
+            });
+        }
 
-return res.status(200).json({
-    message:"Sucessfully updated password"
-})
-    }catch(e){
-        console.log(e.message)
-        return res.status(400).json({
-            error:"Something went wrong please try again"
-        })
+        // Validate password length
+        if (password.length < 6) {
+            return res.status(400).json({
+                error: "Password must be at least 6 characters"
+            });
+        }
+
+        // Check if user exists
+        const userFound = await userModel.findOne({ email });
+        if (!userFound) {
+            return res.status(400).json({
+                error: "User not found"
+            });
+        }
+
+        // ✅ HASH THE PASSWORD BEFORE SAVING
+        const hashedPassword = await argon2.hash(password);
+
+        // Update password with hashed version
+        await userModel.updateOne(
+            { email }, 
+            {
+                $set: {
+                    password: hashedPassword
+                }
+            }
+        );
+
+        return res.status(200).json({
+            message: "Successfully updated password"
+        });
+
+    } catch (e) {
+        console.log(e.message);
+        return res.status(500).json({
+            error: "Something went wrong please try again",
+            details: e.message
+        });
     }
-})
+});
 
 app.post('/forgetpassword',async(req,res)=>{
     let {email}=req.body;
