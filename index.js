@@ -6,8 +6,8 @@ const userModel = require('./user');
 const nodemailer=require('nodemailer')
 
 const argon2 = require('argon2');
-
-
+require('dotenv').config();
+const jwt=require('jsonwebtoken')
 app.use(cors())
 app.use(express.json())
 const mongoose=require('mongoose');
@@ -1093,11 +1093,17 @@ data = processDataArrays(data);
           });
           const info = await transporter.sendMail(mailOptions);
 
-
-await dataModel.create(data)
-return res.status(200).json({
-    message:"Sucess"
-})
+          
+         
+          const dataToSave = {
+              ...data,
+              user: data.user?.id || data.user
+          };
+          
+          await dataModel.create(dataToSave)
+          return res.status(200).json({
+              message:"Sucess"
+          })
     }catch(e){
         console.log(e.message)
         return res.status(400).json({
@@ -1923,6 +1929,7 @@ app.post('/login', async(req, res) => {
     try {
         // Validate input
         if (!email || !password) {
+            console.log("REQUIRED")
             return res.status(400).json({
                 error: "Email and password are required"
             });
@@ -1930,7 +1937,7 @@ app.post('/login', async(req, res) => {
         
         // Find user by email
         let user = await userModel.findOne({email});
-        
+       
         if (!user) {
             return res.status(400).json({
                 error: "Invalid email or password" // Generic error for security
